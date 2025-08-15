@@ -1,5 +1,7 @@
 from django import forms
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import User
+
 
 class UserCreationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
@@ -7,7 +9,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('phone_number','username', 'name', 'last_name')
+        fields = ('phone_number', 'username', 'name', 'last_name')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -23,14 +25,15 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+
 class UserChangeForm(forms.ModelForm):
+    # This shows the hashed password in admin but doesn’t let you change it here
+    password = ReadOnlyPasswordHashField()
+
     class Meta:
         model = User
-        fields = ('phone_number','username', 'name', 'last_name')
+        fields = ('phone_number', 'username', 'name', 'last_name', 'password', 'is_active', 'is_admin', 'is_superuser')
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        if commit:
-            user.save()
-        return user
-
+    def clean_password(self):
+        # Return the initial value regardless of user input
+        return self.initial["password"]
