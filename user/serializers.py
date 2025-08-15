@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from .models import User
 
 
@@ -39,7 +41,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'phone_number', 'username', 'name', 'last_name']
+        fields = ['uid', 'phone_number', 'username', 'name', 'last_name']
 
 
 class PasswordResetSerializer(serializers.Serializer):
@@ -50,3 +52,10 @@ class PasswordResetSerializer(serializers.Serializer):
         if data['old_password'] == data['new_password']:
             raise serializers.ValidationError("The new password cannot be the same as the old password.")
         return data
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['user_uid'] = str(user.uid)  # UUID token ichida
+        return token

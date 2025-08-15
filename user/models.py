@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import RegexValidator
 from django.db import models
@@ -37,6 +39,7 @@ class UserManager(BaseUserManager):
         return self.create_user(phone_number, last_name, name, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     username = models.CharField(max_length=250,unique=True,)
     name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250, default=False)
