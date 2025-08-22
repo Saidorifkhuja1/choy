@@ -186,3 +186,43 @@ class ProductListSerializer(serializers.ModelSerializer):
             "half_products_detail"
         ]
         read_only_fields = ["total_price", "total_kg", "half_products_detail"]
+
+
+class ProductUpdateSerializer(serializers.ModelSerializer):
+    half_products = ProductHalfProductNestedSerializer(
+        many=True, write_only=True, required=False
+    )
+
+    class Meta:
+        model = Product
+        fields = [
+            "id", "name", "price", "type", "amount_of_quti", "kg",
+            "description", "half_products"
+        ]
+        extra_kwargs = {
+            "amount_of_quti": {"required": False, "allow_null": True},
+            "kg": {"required": False, "allow_null": True},
+        }
+
+    def update(self, instance, validated_data):
+        half_products_data = validated_data.pop("half_products", None)
+
+        # oddiy fieldlarni yangilash
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if half_products_data is not None:
+            # eski bog‘lanishlarni o‘chirish
+            instance.producthalfproduct_set.all().delete()
+
+            # yangilarini qo‘shish
+            for hp_data in half_products_data:
+                ProductHalfProduct.objects.create(
+                    product=instance,
+                    half_product=hp_data["half_product"],
+                    used_kg=hp_data.get("used_kg", 0)
+                )
+
+        instance.update_totals()
+        return instance

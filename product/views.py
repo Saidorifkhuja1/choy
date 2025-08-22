@@ -2,7 +2,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from .models import HalfProduct, Product
 from rest_framework.parsers import  FormParser, MultiPartParser
-from .serializers import HalfProductSerializer, HalfProductUpdateSerializer, ProductListSerializer, ProductCreateSerializer
+from .serializers import HalfProductSerializer, HalfProductUpdateSerializer, ProductListSerializer, \
+    ProductCreateSerializer, ProductUpdateSerializer
 
 
 class HalfProductCreateView(generics.CreateAPIView):
@@ -48,3 +49,24 @@ class ProductListAPIView(generics.ListAPIView):
 class ProductCreateAPIView(generics.CreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductCreateSerializer
+
+
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductListSerializer
+    lookup_field = "id"
+
+
+
+class ProductUpdateAPIView(generics.UpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductUpdateSerializer
+    lookup_field = "id"
+
+
+
+class ProductDeleteAPIView(generics.DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductListSerializer
+    lookup_field = "id"
