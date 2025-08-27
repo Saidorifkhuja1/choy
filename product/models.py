@@ -104,7 +104,7 @@ class ProductHalfProduct(models.Model):
     def used_qops(self):
         """Ishlatilgan qoplar sonini hisoblaydi (kasr sonlarda ham)"""
         if self.half_product.type == "qop" and self.half_product.kg:
-            return float(self.used_kg) / float(self.half_product.kg)  # ❌ round emas
+            return float(self.used_kg) / float(self.half_product.kg)
         return 0
 
     def clean(self):
@@ -120,41 +120,32 @@ class ProductHalfProduct(models.Model):
 
     def calculate_cost(self):
         """Bog‘langan yarim mahsulot narxini hisoblaydi"""
-        if self.half_product.type == "kg":
-            return self.used_kg * self.half_product.price
-        elif self.half_product.type == "qop":
-            return Decimal(str(self.used_qops)) * self.half_product.price
-        return Decimal("0.00")
+        return self.used_kg * self.half_product.price
 
     def _update_half_product_stock(self, multiplier=1):
         """HalfProduct zaxiralarini yangilash"""
+        kg_change = multiplier * float(self.used_kg)
+
         if self.half_product.type == "kg":
-            # kg tipida
-            kg_change = multiplier * float(self.used_kg)
-            price_change = multiplier * float(self.calculate_cost())
+
+            self.half_product.kg = max(0, float(self.half_product.kg) - kg_change)
             self.half_product.total_kg = max(0, float(self.half_product.total_kg) - kg_change)
-            self.half_product.total_price = max(
-                Decimal('0.0'),
-                self.half_product.total_price - Decimal(str(price_change))
-            )
 
         elif self.half_product.type == "qop":
-            # qop tipida
             used_qops = self.used_qops
             qop_change = multiplier * used_qops
-            kg_change = multiplier * (used_qops * float(self.half_product.kg))
-            price_change = multiplier * float(self.calculate_cost())
 
             if self.half_product.amount_of_qop is not None:
                 self.half_product.amount_of_qop = float(self.half_product.amount_of_qop) - qop_change
-            self.half_product.total_kg = max(0, float(self.half_product.total_kg) - kg_change)
-            self.half_product.total_price = max(
-                Decimal('0.0'),
-                self.half_product.total_price - Decimal(str(price_change))
-            )
 
-        # saqlashda DecimalField o‘zi verguldan keyin 1 xona qilib saqlaydi
-        self.half_product.save(update_fields=['total_kg', 'total_price', 'amount_of_qop'])
+
+            self.half_product.kg = max(0, float(self.half_product.kg) - kg_change)
+            self.half_product.total_kg = max(0, float(self.half_product.total_kg) - kg_change)
+
+
+        self.half_product.total_price = Decimal(str(self.half_product.total_kg)) * self.half_product.price
+
+        self.half_product.save(update_fields=['kg', 'total_kg', 'total_price', 'amount_of_qop'])
 
     def save(self, *args, **kwargs):
         """Saqlanganda validatsiya va zaxiralarni yangilash"""
@@ -171,5 +162,3 @@ class ProductHalfProduct(models.Model):
         product = self.product
         super().delete(*args, **kwargs)
         product.update_totals()
-
-

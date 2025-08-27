@@ -1,12 +1,9 @@
 from rest_framework import serializers
 
+from .models import Diller
 
-from .models import Barn
 
-
-class BarnSerializer(serializers.ModelSerializer):
+class DillerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Barn
+        model = Diller
         fields = ['id', 'name', 'location', 'description', 'phone_number']
-
-

@@ -131,27 +131,31 @@ class HalfProductUpdateSerializer(serializers.ModelSerializer):
 
 
 class ProductHalfProductNestedSerializer(serializers.ModelSerializer):
-    half_product_id = serializers.PrimaryKeyRelatedField(
-        queryset=HalfProduct.objects.all(),
-        source="half_product"
-    )
+    # ✅ Add explicit half_product_id for writing
+    half_product_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = ProductHalfProduct
-        fields = ["half_product_id", "used_kg"]
-        # used_qops property sifatida hisoblanadi, shuning uchun field emas
+        fields = ["id", "half_product_id", "used_kg"]
+        extra_kwargs = {
+            "used_kg": {"required": False}
+        }
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
-    half_products = ProductHalfProductNestedSerializer(
-        many=True, write_only=True
-    )
+    half_products = ProductHalfProductNestedSerializer(many=True, write_only=True)
 
     class Meta:
         model = Product
         fields = [
-            "id", "name", "price", "type", "amount_of_quti", "kg",
-            "description", "half_products"
+            "id",
+            "name",
+            "price",
+            "type",
+            "amount_of_quti",
+            "kg",
+            "description",
+            "half_products",
         ]
         extra_kwargs = {
             "amount_of_quti": {"required": False, "allow_null": True},
@@ -165,13 +169,12 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         for hp_data in half_products_data:
             ProductHalfProduct.objects.create(
                 product=product,
-                half_product=hp_data["half_product"],
-                used_kg=hp_data.get("used_kg", 0)
+                half_product_id=hp_data["half_product_id"],  # ✅ will now exist
+                used_kg=hp_data.get("used_kg", 0),
             )
 
         product.update_totals()
         return product
-
 
 class ProductListSerializer(serializers.ModelSerializer):
     half_products_detail = ProductHalfProductNestedSerializer(

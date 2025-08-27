@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'user',
     'barn',
+    'diller',
+    'soldproduct',
     'product',
     'drf_yasg',
     "corsheaders",

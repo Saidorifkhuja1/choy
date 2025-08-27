@@ -70,3 +70,5 @@ class ProductDeleteAPIView(generics.DestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     lookup_field = "id"
+
+
