@@ -53,7 +53,7 @@ urlpatterns = [
     path('api/product/', include('product.urls')),
     path('api/diller/', include('diller.urls')),
     path('api/soldproduct/', include('soldproduct.urls')),
-
+    path('api/shop/', include('shop.urls')),
 
 
 

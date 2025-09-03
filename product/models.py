@@ -82,7 +82,12 @@ class Product(models.Model):
     def update_totals(self):
         """Total price va total kg avtomatik yangilash"""
         self.total_kg = self.calculate_total_kg()
-        self.total_price = self.price * self.total_kg
+
+        if self.type == "quti":  # ✅ agar quti bo'lsa
+            self.total_price = self.price * Decimal(str(self.amount_of_quti or 0))
+        else:  # ✅ kg bo'lsa
+            self.total_price = self.price * self.total_kg
+
         self.save(update_fields=["total_price", "total_kg"])
 
 

@@ -1,32 +1,58 @@
-
 from rest_framework import serializers
+from decimal import Decimal, InvalidOperation
 from .models import SoldProduct
+
 
 class SoldProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = SoldProduct
-        fields = ["id", "name", "price", "kg", "quti", "total_price", "paid_price", "debt", "created_at"]
-        read_only_fields = ["total_price", "debt"]  # avtomatik hisoblanadi
+        fields = "__all__"
+        read_only_fields = ["id", "total_price", "debt", "created_at"]
+
+
+class SoldProductCreateSerializer(serializers.ModelSerializer):
+    # CharField qilib olamiz, keyin validate() ichida Decimal ga o‘tkazamiz
+    quti = serializers.CharField(required=False, allow_blank=True, allow_null=True, default="0")
+    kg = serializers.CharField(required=False, allow_blank=True, allow_null=True, default="0")
+
+    class Meta:
+        model = SoldProduct
+        fields = [
+            "id",
+            "name",
+            "dealer",
+            "product",
+            "quti",
+            "kg",
+            "price",
+            "total_price",
+            "paid_price",
+            "debt",
+            "created_at",
+        ]
+        read_only_fields = ["id", "total_price", "debt", "created_at"]
+
+    def validate(self, attrs):
+        # Quti ni son qilib o‘tkazamiz
+        try:
+            quti = int(attrs.get("quti") or 0)
+        except (ValueError, TypeError):
+            quti = 0
+
+        # Kg ni decimal qilib o‘tkazamiz
+        try:
+            kg = Decimal(attrs.get("kg") or "0")
+        except (InvalidOperation, TypeError, ValueError):
+            kg = Decimal("0.00")
+
+        # Ikkalasi ham 0 bo‘lsa – xato
+        if quti == 0 and kg == 0:
+            raise serializers.ValidationError("❌ Quti yoki Kg dan bittasi kiritilishi shart")
+
+        attrs["quti"] = quti
+        attrs["kg"] = kg
+
+        return attrs
 
     def create(self, validated_data):
-        # price ni olib olish
-        price = validated_data.get("price", 0)
-        kg = validated_data.get("kg", 0)
-        quti = validated_data.get("quti", 0)
-
-        # total_price hisoblash
-        if kg and kg > 0:
-            total_price = price * kg
-        elif quti and quti > 0:
-            total_price = price * quti
-        else:
-            total_price = 0
-
-        validated_data["total_price"] = total_price
-
-        # debt hisoblash
-        paid_price = validated_data.get("paid_price", 0)
-        validated_data["debt"] = total_price - paid_price
-
-        return super().create(validated_data)
-
+        return SoldProduct.objects.create(**validated_data)

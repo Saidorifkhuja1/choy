@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'user',
     'barn',
     'diller',
+    'shop',
     'soldproduct',
     'product',
     'drf_yasg',
