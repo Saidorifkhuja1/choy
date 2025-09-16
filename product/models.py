@@ -167,3 +167,8 @@ class ProductHalfProduct(models.Model):
         product = self.product
         super().delete(*args, **kwargs)
         product.update_totals()
+
+
+
+
+
