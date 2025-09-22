@@ -8,21 +8,31 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('phone_number', 'username', 'name', 'last_name', 'is_active', 'is_admin', 'is_superuser')
-    list_filter = ('is_admin', 'is_active', 'is_superuser')
+    list_display = (
+        'phone_number', 'username', 'name', 'last_name', 'rol',
+        'is_active', 'is_admin', 'is_superuser'
+    )
+    list_filter = ('rol', 'is_admin', 'is_active', 'is_superuser')
 
     fieldsets = (
-        ('Personal info', {'fields': ('phone_number', 'username', 'password', 'name', 'last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_admin', 'is_superuser')}),
+        ('Personal info', {
+            'fields': ('phone_number', 'username', 'password', 'name', 'last_name', 'rol')
+        }),
+        ('Permissions', {
+            'fields': ('is_active', 'is_admin', 'is_superuser')
+        }),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'username', 'name', 'last_name', 'password1', 'password2', 'is_active', 'is_admin', 'is_superuser'),
+            'fields': (
+                'phone_number', 'username', 'name', 'last_name', 'rol',
+                'password1', 'password2', 'is_active', 'is_admin', 'is_superuser'
+            ),
         }),
     )
 
-    search_fields = ('phone_number', 'username', 'name', 'last_name')
+    search_fields = ('phone_number', 'username', 'name', 'last_name', 'rol')
     ordering = ('phone_number',)
     filter_horizontal = ()
 

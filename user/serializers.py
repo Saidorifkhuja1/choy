@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
 from .models import User
 
 
@@ -11,7 +10,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'name', 'last_name', 'phone_number', 'password', 'confirm_password', 'is_admin']
+        fields = [
+            'username', 'name', 'last_name', 'phone_number',
+            'password', 'confirm_password', 'is_admin', 'rol'
+        ]
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -27,13 +29,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'name', 'last_name']
+        fields = ['username', 'name', 'last_name', 'rol']
         read_only_fields = ['phone_number']
 
     def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
         instance.name = validated_data.get('name', instance.name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.username = validated_data.get('username', instance.username)
+        instance.rol = validated_data.get('rol', instance.rol)
         instance.save()
         return instance
 
@@ -41,7 +44,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['uid', 'phone_number', 'username', 'name', 'last_name']
+        fields = [
+            'uid', 'phone_number', 'username', 'name', 'last_name', 'rol'
+        ]
 
 
 class PasswordResetSerializer(serializers.Serializer):
@@ -53,9 +58,11 @@ class PasswordResetSerializer(serializers.Serializer):
             raise serializers.ValidationError("The new password cannot be the same as the old password.")
         return data
 
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token['user_uid'] = str(user.uid)  # UUID token ichida
+        token['rol'] = user.rol           # token ichida rol ham bo‘lsin
         return token

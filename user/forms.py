@@ -9,7 +9,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('phone_number', 'username', 'name', 'last_name')
+        fields = ('phone_number', 'username', 'name', 'last_name', 'rol')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -32,7 +32,10 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('phone_number', 'username', 'name', 'last_name', 'password', 'is_active', 'is_admin', 'is_superuser')
+        fields = (
+            'phone_number', 'username', 'name', 'last_name', 'rol',
+            'password', 'is_active', 'is_admin', 'is_superuser'
+        )
 
     def clean_password(self):
         # Return the initial value regardless of user input

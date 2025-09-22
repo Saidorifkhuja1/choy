@@ -39,11 +39,17 @@ class UserManager(BaseUserManager):
         return self.create_user(phone_number, last_name, name, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
+    TYPE_CHOICES = [
+        ('admin', 'Admin'),
+        ('diller', 'Diller'),
+        ('agent', 'Agent'),
+        ('seller', 'Seller'),]
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     username = models.CharField(max_length=250,unique=True,)
     name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250, default=False)
     phone_number = models.CharField(validators=[PHONE_REGEX], max_length=21, unique=True, default="+998931112233")
+    rol = models.CharField(max_length=100, choices=TYPE_CHOICES, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 

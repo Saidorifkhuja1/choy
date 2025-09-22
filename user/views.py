@@ -3,17 +3,14 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import *
 from rest_framework import generics, status
-from rest_framework.permissions import  IsAdminUser
+from rest_framework.permissions import IsAdminUser
 from .utils import unhash_token
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotFound, AuthenticationFailed
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
-
-
-
-
+from .models import User
 
 
 class UserRegistrationAPIView(generics.CreateAPIView):
@@ -30,11 +27,10 @@ class UserRegistrationAPIView(generics.CreateAPIView):
         token_data = {
             "refresh": str(refresh),
             "access": str(access_token),
+            "rol": user.rol,
+            "uid": str(user.uid)
         }
         return Response(token_data, status=status.HTTP_201_CREATED)
-
-
-
 
 
 class UpdateProfileView(generics.UpdateAPIView):
@@ -44,7 +40,7 @@ class UpdateProfileView(generics.UpdateAPIView):
 
     def get_queryset(self):
         decoded_token = unhash_token(self.request.headers)
-        user_uid = decoded_token.get('user_uid')  # token ichida uid bo‘lishi kerak
+        user_uid = decoded_token.get('user_uid')
         return User.objects.filter(uid=user_uid)
 
 
@@ -109,14 +105,6 @@ class DeleteProfileAPIView(generics.DestroyAPIView):
         return User.objects.filter(uid=user_uid)
 
 
-
-
-
-
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-
-
-
 
